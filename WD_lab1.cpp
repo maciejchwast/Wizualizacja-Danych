@@ -26,6 +26,7 @@ int main()
 //#include "stdafx.h"
 #include <GL/glew.h>
 #include <SFML/Window.hpp>
+#include <iostream>
 
 // Kody shaderów
 const GLchar* vertexSource = R"glsl(
@@ -53,6 +54,8 @@ int main()
     sf::ContextSettings settings;
     settings.depthBits = 24;
     settings.stencilBits = 8;
+    settings.majorVersion = 3;
+    settings.minorVersion = 2;
 
     // Okno renderingu
     sf::Window window(sf::VideoMode(800, 600, 32), "OpenGL", sf::Style::Titlebar | sf::Style::Close, settings);
@@ -72,24 +75,68 @@ int main()
     glGenBuffers(1, &vbo);
 
     GLfloat vertices[] = {
-    0.0f, 0.5f, 1.0f, 0.0f, 0.0f,
-    0.5f, -0.5f, 0.0f, 1.0f, 0.0f,
-    -0.5f, -0.5f, 0.0f, 0.0f, 1.0f
+        -0.5f,  0.5f, 1.0f, 0.0f, 0.0f, // Top-left
+        0.5f,  0.5f, 0.0f, 1.0f, 0.0f, // Top-right
+        0.5f, -0.5f, 0.0f, 0.0f, 1.0f, // Bottom-right
+        -0.5f, -0.5f, 1.0f, 1.0f, 1.0f  // Bottom-left
     };
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
+    GLuint ebo;
+    glGenBuffers(1, &ebo);
+    GLuint elements[] = {
+        0, 1, 2,
+        2, 3, 0
+    };
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(elements), elements, GL_STATIC_DRAW);
+
     // Utworzenie i skompilowanie shadera wierzchołków
-    GLuint vertexShader =
-        glCreateShader(GL_VERTEX_SHADER);
+    GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
     glShaderSource(vertexShader, 1, &vertexSource, NULL);
-    glCompileShader(vertexShader);
+    try {
+        glCompileShader(vertexShader);
+    }
+    catch (const std::exception e) {
+        std::cout << "Vertex shader compilation error! " << e.what() << std::endl;
+    }
 
     // Utworzenie i skompilowanie shadera fragmentów
-    GLuint fragmentShader =
-        glCreateShader(GL_FRAGMENT_SHADER);
+    GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
     glShaderSource(fragmentShader, 1, &fragmentSource, NULL);
-    glCompileShader(fragmentShader);
+    try {
+        glCompileShader(fragmentShader);
+
+    }
+    catch (const std::exception e) {
+        std::cout << "Fragment shader compilation error! " << e.what() << std::endl;
+    }
+
+    //sprawdzenie poprawnosci kompilacji na poziomie openGL
+    GLint status;
+    glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &status);
+    char buffer[512];
+    glGetShaderInfoLog(fragmentShader, 512, NULL, buffer);
+    if (status == GL_FALSE)
+    {
+        std::cout << "Compilation fragmentShader ERROR \n";
+        std::cout << buffer;
+    }
+    else {
+        std::cout << "Compilation fragmentShader OK \n";
+    }
+    glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &status);
+    glGetShaderInfoLog(vertexShader, 512, NULL, buffer);
+    // Sprawdzenie poprawności kompilacji shadera wierzchołków
+    if (status == GL_FALSE)
+    {
+        std::cout << "Compilation vertexShader ERROR \n";
+        std::cout << buffer;
+    }
+    else {
+        std::cout << "Compilation vertexShader OK\n";
+    }
 
     // Zlinkowanie obu shaderów w jeden wspólny program
     GLuint shaderProgram = glCreateProgram();
@@ -123,7 +170,8 @@ int main()
         glClear(GL_COLOR_BUFFER_BIT);
 
         // Narysowanie trójkąta na podstawie 3 wierzchołków
-        glDrawArrays(GL_TRIANGLES, 0, 3);
+        //glDrawArrays(GL_POLYGON, 0, 4);
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
         // Wymiana buforów tylni/przedni
         window.display();
     }
