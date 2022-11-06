@@ -1,54 +1,31 @@
-﻿// WD_lab1.cpp : Ten plik zawiera funkcję „main”. W nim rozpoczyna się i kończy wykonywanie programu.
-//
-/*
-
-#include <iostream>
-
-int main()
-{
-    std::cout << "Hello World!\n";
-}
-*/
-// Uruchomienie programu: Ctrl + F5 lub menu Debugowanie > Uruchom bez debugowania
-// Debugowanie programu: F5 lub menu Debugowanie > Rozpocznij debugowanie
-
-// Porady dotyczące rozpoczynania pracy:
-//   1. Użyj okna Eksploratora rozwiązań, aby dodać pliki i zarządzać nimi
-//   2. Użyj okna programu Team Explorer, aby nawiązać połączenie z kontrolą źródła
-//   3. Użyj okna Dane wyjściowe, aby sprawdzić dane wyjściowe kompilacji i inne komunikaty
-//   4. Użyj okna Lista błędów, aby zobaczyć błędy
-//   5. Wybierz pozycję Projekt > Dodaj nowy element, aby utworzyć nowe pliki kodu, lub wybierz pozycję Projekt > Dodaj istniejący element, aby dodać istniejące pliku kodu do projektu
-//   6. Aby w przyszłości ponownie otworzyć ten projekt, przejdź do pozycji Plik > Otwórz > Projekt i wybierz plik sln
-
-
-
-// Nagłówki
-//#include "stdafx.h"
+﻿//#include "stdafx.h"
 #include <GL/glew.h>
 #include <SFML/Window.hpp>
 #include <iostream>
 
-// Kody shaderów
+// Kody shaderow
 const GLchar* vertexSource = R"glsl(
-#version 150 core
-in vec2 position;
-in vec3 color;
-out vec3 Color;
-void main(){
-Color = color;
-gl_Position = vec4(position, 0.0, 1.0);
-}
-)glsl";
+ #version 150 core
+ in vec3 position;
+ in vec3 color;
+ out vec3 Color;
+ void main(){
+ Color = color;
+ gl_Position = vec4(position, 1.0);
+ }
+ )glsl";
 
 const GLchar* fragmentSource = R"glsl(
-#version 150 core
-in vec3 Color;
-out vec4 outColor;
-void main()
-{
-outColor = vec4(Color, 1.0);
-}
-)glsl";
+ #version 150 core
+ in vec3 Color;
+ out vec4 outColor;
+ void main()
+ {
+ outColor = vec4(Color, 1.0);
+ }
+ )glsl";
+
+
 int main()
 {
     sf::ContextSettings settings;
@@ -57,131 +34,139 @@ int main()
     settings.majorVersion = 3;
     settings.minorVersion = 2;
 
-    // Okno renderingu
-    sf::Window window(sf::VideoMode(800, 600, 32), "OpenGL", sf::Style::Titlebar | sf::Style::Close, settings);
+	//Rendering
+	sf::Window window(sf::VideoMode(800, 600, 32), "OpenGL", sf::Style::Titlebar | sf::Style::Close, settings);
 
-    // Inicjalizacja GLEW
-    glewExperimental = GL_TRUE;
-    glewInit();
+	//Inicjalizacja GLEW
+	glewExperimental = GL_TRUE;
+	glewInit();
 
-    // Utworzenie VAO (Vertex Array Object)
-    GLuint vao;
-    glGenVertexArrays(1, &vao);
-    glBindVertexArray(vao);
+	//Utworzenie VAO (Vertex Array Object)
+	GLuint vao;
+	glGenVertexArrays(1, &vao);
+	glBindVertexArray(vao);
 
-    // Utworzenie VBO (Vertex Buffer Object)
-    // i skopiowanie do niego danych wierzchołkowych
-    GLuint vbo;
-    glGenBuffers(1, &vbo);
+	// Utworzenie VBO (Vertex Buffer Object)
+	// i skopiowanie do niego danych wierzchoÅ‚kowych
+	GLuint vbo;
+	glGenBuffers(1, &vbo);
 
-    GLfloat vertices[] = {
-        -0.5f,  0.5f, 1.0f, 0.0f, 0.0f, // Top-left
-        0.5f,  0.5f, 0.0f, 1.0f, 0.0f, // Top-right
-        0.5f, -0.5f, 0.0f, 0.0f, 1.0f, // Bottom-right
-        -0.5f, -0.5f, 1.0f, 1.0f, 1.0f  // Bottom-left
-    };
-    glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+	// współrzedna x, współrzedna y, współrzędna z, RGB
+	GLfloat vertices[] =
+	{ -0.7f, 0.7f, 0.0f, 0.60f, 0.00f, 0.30f,
+	0.7f, 0.7f, 0.1f, 0.30f, 0.42f, 1.00f,
+	-0.7f, -0.7f, 0.2f, 0.30f, 0.42f, 1.00f,
 
-    GLuint ebo;
-    glGenBuffers(1, &ebo);
-    GLuint elements[] = {
-        0, 1, 2,
-        2, 3, 0
-    };
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(elements), elements, GL_STATIC_DRAW);
+	0.7f, -0.7f, 0.0f, 0.60f, 0.00f, 0.30f,
+	0.7f, 0.7f, 0.1f, 0.30f, 0.42f, 1.00f,
+	-0.7f, -0.7f, 0.2f, 0.30f, 0.42f, 1.00f,
+	};
+	glBindBuffer(GL_ARRAY_BUFFER, vbo);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
-    // Utworzenie i skompilowanie shadera wierzchołków
-    GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
-    glShaderSource(vertexShader, 1, &vertexSource, NULL);
-    try {
-        glCompileShader(vertexShader);
-    }
-    catch (const std::exception e) {
-        std::cout << "Vertex shader compilation error! " << e.what() << std::endl;
-    }
+	// Utworzenie i skompilowanie shadera wierzchołków
+	GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
+	glShaderSource(vertexShader, 1, &vertexSource, NULL);
+	glCompileShader(vertexShader);
 
-    // Utworzenie i skompilowanie shadera fragmentów
-    GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-    glShaderSource(fragmentShader, 1, &fragmentSource, NULL);
-    try {
-        glCompileShader(fragmentShader);
+	// Utworzenie i skompilowanie shadera fragmentów
+	GLuint fragmentShader =	glCreateShader(GL_FRAGMENT_SHADER);
+	glShaderSource(fragmentShader, 1, &fragmentSource, NULL);
+	glCompileShader(fragmentShader);
 
-    }
-    catch (const std::exception e) {
-        std::cout << "Fragment shader compilation error! " << e.what() << std::endl;
-    }
+	// Zlinkowanie obu shaderów w jeden wspólny program
+	GLuint shaderProgram = glCreateProgram();
+	glAttachShader(shaderProgram, vertexShader);
+	glAttachShader(shaderProgram, fragmentShader);
+	glBindFragDataLocation(shaderProgram, 0, "outColor");
+	glLinkProgram(shaderProgram);
+	glUseProgram(shaderProgram);
 
-    //sprawdzenie poprawnosci kompilacji na poziomie openGL
-    GLint status;
-    glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &status);
-    char buffer[512];
-    glGetShaderInfoLog(fragmentShader, 512, NULL, buffer);
-    if (status == GL_FALSE)
-    {
-        std::cout << "Compilation fragmentShader ERROR \n";
-        std::cout << buffer;
-    }
-    else {
-        std::cout << "Compilation fragmentShader OK \n";
-    }
-    glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &status);
-    glGetShaderInfoLog(vertexShader, 512, NULL, buffer);
-    // Sprawdzenie poprawności kompilacji shadera wierzchołków
-    if (status == GL_FALSE)
-    {
-        std::cout << "Compilation vertexShader ERROR \n";
-        std::cout << buffer;
-    }
-    else {
-        std::cout << "Compilation vertexShader OK\n";
-    }
+	// Specifikacja formatu danych wierzchołkowych
+	GLint posAttrib = glGetAttribLocation(shaderProgram, "position");
+	glEnableVertexAttribArray(posAttrib);
+	glVertexAttribPointer(posAttrib, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), 0);
+	GLint colAttrib = glGetAttribLocation(shaderProgram, "color");
+	glEnableVertexAttribArray(colAttrib);
+	glVertexAttribPointer(colAttrib, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (void*)(3 * sizeof(GLfloat)));
 
-    // Zlinkowanie obu shaderów w jeden wspólny program
-    GLuint shaderProgram = glCreateProgram();
-    glAttachShader(shaderProgram, vertexShader);
-    glAttachShader(shaderProgram, fragmentShader);
-    glBindFragDataLocation(shaderProgram, 0, "outColor");
-    glLinkProgram(shaderProgram);
-    glUseProgram(shaderProgram);
+	// Rozpoczęcie pętli zdarzeń,
+	int prymityw = GL_TRIANGLES;
+	bool running = true;
 
-    // Specifikacja formatu danych wierzchołkowych
-    GLint posAttrib = glGetAttribLocation(shaderProgram, "position");
-    glEnableVertexAttribArray(posAttrib);
-    glVertexAttribPointer(posAttrib, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), 0);
-    GLint colAttrib = glGetAttribLocation(shaderProgram, "color");
-    glEnableVertexAttribArray(colAttrib);
-    glVertexAttribPointer(colAttrib, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (void*)(2 * sizeof(GLfloat)));
+	while (running) {
+		sf::Event windowEvent;
+		while (window.pollEvent(windowEvent)) {
+			switch (windowEvent.type) {
+			case sf::Event::Closed:
+				running = false;
+				break;
+			}
+		}
+		sf::Event::KeyPressed;
+		switch (windowEvent.key.code)
+		{
+		case sf::Keyboard::Num1:
+			prymityw = GL_POINTS;
+			break;
 
-    // Rozpoczęcie pętli zdarzeń
-    bool running = true;
-    while (running) {
-        sf::Event windowEvent;
-        while (window.pollEvent(windowEvent)) {
-            switch (windowEvent.type) {
-            case sf::Event::Closed:
-                running = false;
-                break;
-            }
-        }
-        // Nadanie scenie koloru czarnego
-        glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT);
+		case sf::Keyboard::Num2:
+			prymityw = GL_LINES;
+			break;
 
-        // Narysowanie trójkąta na podstawie 3 wierzchołków
-        //glDrawArrays(GL_POLYGON, 0, 4);
-        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-        // Wymiana buforów tylni/przedni
-        window.display();
-    }
-    // Kasowanie programu i czyszczenie buforów
-    glDeleteProgram(shaderProgram);
-    glDeleteShader(fragmentShader);
-    glDeleteShader(vertexShader);
-    glDeleteBuffers(1, &vbo);
-    glDeleteVertexArrays(1, &vao);
-    // Zamknięcie okna renderingu
-    window.close();
-    return 0;
+		case sf::Keyboard::Num3:
+			prymityw = GL_LINE_STRIP;
+			break;
+
+		case sf::Keyboard::Num4:
+			prymityw = GL_LINE_LOOP;
+			break;
+
+		case sf::Keyboard::Num5:
+			prymityw = GL_TRIANGLES;
+			break;
+
+		case sf::Keyboard::Num6:
+			prymityw = GL_TRIANGLE_STRIP;
+			break;
+
+		case sf::Keyboard::Num7:
+			prymityw = GL_TRIANGLE_FAN;
+			break;
+
+		case sf::Keyboard::Num8:
+			prymityw = GL_QUADS;
+			break;
+
+			prymityw = GL_QUAD_STRIP;
+		case sf::Keyboard::Num9:
+			break;
+
+		case sf::Keyboard::Num0:
+			prymityw = GL_POLYGON;
+			break;
+
+		case sf::Keyboard::Escape:
+			running = false;
+			break;
+		}
+
+		//kolor sceny
+		glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
+		glClear(GL_COLOR_BUFFER_BIT);
+
+		// Narysowanie trójkąta na podstawie 3 wierzchołków
+		glDrawArrays(prymityw, 0, sizeof(vertices)); //wieloktotnośc 3 - rysowanie odpowiedniej ilości trójkątów
+	   // Wymiana buforów tylni/przedni
+		window.display();
+	}
+	// Kasowanie programu i czyszczenie buforów
+	glDeleteProgram(shaderProgram);
+	glDeleteShader(fragmentShader);
+	glDeleteShader(vertexShader);
+	glDeleteBuffers(1, &vbo);
+	glDeleteVertexArrays(1, &vao);
+	// Zamknięcie okna renderingu
+	window.close();
+	return 0;
 }
